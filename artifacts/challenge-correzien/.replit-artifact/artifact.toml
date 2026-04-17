@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Challenge Corrézien"
+version = "1.0.0"
+id = "artifacts/challenge-correzien"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20570
+
+[services.development]
+run = "pnpm --filter @workspace/challenge-correzien run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/challenge-correzien", "run", "build" ]
+publicDir = "artifacts/challenge-correzien/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20570"
+BASE_PATH = "/"

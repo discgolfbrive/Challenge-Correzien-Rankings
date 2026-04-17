@@ -3,20 +3,33 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Challenge Corrézien Disc-Golf API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: players
+    description: Player management
+  - name: stages
+    description: Stage management
+  - name: scores
+    description: Score management
+  - name: rankings
+    description: Rankings and leaderboards
+  - name: years
+    description: Year management
+  - name: scoring-rules
+    description: Scoring rules management
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +37,443 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Admin logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current admin session
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /years:
+    get:
+      operationId: listYears
+      tags: [years]
+      summary: List all competition years
+      responses:
+        "200":
+          description: List of years
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Year"
+    post:
+      operationId: createYear
+      tags: [years]
+      summary: Create a competition year
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateYearBody"
+      responses:
+        "201":
+          description: Year created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Year"
+
+  /years/{yearId}:
+    delete:
+      operationId: deleteYear
+      tags: [years]
+      summary: Delete a competition year
+      parameters:
+        - name: yearId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Year deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /players:
+    get:
+      operationId: listPlayers
+      tags: [players]
+      summary: List all players
+      responses:
+        "200":
+          description: List of players
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Player"
+    post:
+      operationId: createPlayer
+      tags: [players]
+      summary: Create a player
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlayerBody"
+      responses:
+        "201":
+          description: Player created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+
+  /players/{playerId}:
+    put:
+      operationId: updatePlayer
+      tags: [players]
+      summary: Update a player
+      parameters:
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlayerBody"
+      responses:
+        "200":
+          description: Player updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+    delete:
+      operationId: deletePlayer
+      tags: [players]
+      summary: Delete a player
+      parameters:
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Player deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /stages:
+    get:
+      operationId: listStages
+      tags: [stages]
+      summary: List stages
+      parameters:
+        - name: yearId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of stages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Stage"
+    post:
+      operationId: createStage
+      tags: [stages]
+      summary: Create a stage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStageBody"
+      responses:
+        "201":
+          description: Stage created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stage"
+
+  /stages/{stageId}:
+    put:
+      operationId: updateStage
+      tags: [stages]
+      summary: Update a stage
+      parameters:
+        - name: stageId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStageBody"
+      responses:
+        "200":
+          description: Stage updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stage"
+    delete:
+      operationId: deleteStage
+      tags: [stages]
+      summary: Delete a stage
+      parameters:
+        - name: stageId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stage deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /scores:
+    get:
+      operationId: listScores
+      tags: [scores]
+      summary: List scores
+      parameters:
+        - name: stageId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: playerId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of scores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Score"
+    post:
+      operationId: createOrUpdateScore
+      tags: [scores]
+      summary: Create or update a score
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateScoreBody"
+      responses:
+        "200":
+          description: Score saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Score"
+
+  /scores/{scoreId}:
+    delete:
+      operationId: deleteScore
+      tags: [scores]
+      summary: Delete a score
+      parameters:
+        - name: scoreId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Score deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /rankings/{yearId}:
+    get:
+      operationId: getRankings
+      tags: [rankings]
+      summary: Get rankings for a year (stage breakdown + cumulated)
+      parameters:
+        - name: yearId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Rankings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rankings"
+
+  /rankings/{yearId}/export:
+    get:
+      operationId: exportRankingsCsv
+      tags: [rankings]
+      summary: Export rankings as CSV
+      parameters:
+        - name: yearId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: CSV export
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /scoring-rules:
+    get:
+      operationId: listScoringRules
+      tags: [scoring-rules]
+      summary: List scoring rules
+      responses:
+        "200":
+          description: List of scoring rules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScoringRule"
+    post:
+      operationId: createScoringRule
+      tags: [scoring-rules]
+      summary: Create a scoring rule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateScoringRuleBody"
+      responses:
+        "201":
+          description: Scoring rule created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScoringRule"
+
+  /scoring-rules/{ruleId}:
+    put:
+      operationId: updateScoringRule
+      tags: [scoring-rules]
+      summary: Update a scoring rule
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateScoringRuleBody"
+      responses:
+        "200":
+          description: Rule updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScoringRule"
+    delete:
+      operationId: deleteScoringRule
+      tags: [scoring-rules]
+      summary: Delete a scoring rule
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Rule deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +484,344 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+
+    AdminSession:
+      type: object
+      properties:
+        isAuthenticated:
+          type: boolean
+        username:
+          type: string
+      required:
+        - isAuthenticated
+
+    Year:
+      type: object
+      properties:
+        id:
+          type: integer
+        year:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - year
+        - createdAt
+
+    CreateYearBody:
+      type: object
+      properties:
+        year:
+          type: integer
+      required:
+        - year
+
+    Player:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - createdAt
+
+    CreatePlayerBody:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+
+    Stage:
+      type: object
+      properties:
+        id:
+          type: integer
+        yearId:
+          type: integer
+        name:
+          type: string
+        location:
+          type: string
+        date:
+          type: string
+        par:
+          type: integer
+        order:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - yearId
+        - name
+        - par
+        - order
+        - createdAt
+
+    CreateStageBody:
+      type: object
+      properties:
+        yearId:
+          type: integer
+        name:
+          type: string
+        location:
+          type: string
+        date:
+          type: string
+        par:
+          type: integer
+        order:
+          type: integer
+      required:
+        - yearId
+        - name
+        - par
+        - order
+
+    Score:
+      type: object
+      properties:
+        id:
+          type: integer
+        playerId:
+          type: integer
+        stageId:
+          type: integer
+        score:
+          type: integer
+        points:
+          type: integer
+        playerName:
+          type: string
+        stageName:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - playerId
+        - stageId
+        - score
+        - points
+        - createdAt
+
+    CreateScoreBody:
+      type: object
+      properties:
+        playerId:
+          type: integer
+        stageId:
+          type: integer
+        score:
+          type: integer
+      required:
+        - playerId
+        - stageId
+        - score
+
+    ScoringRule:
+      type: object
+      properties:
+        id:
+          type: integer
+        position:
+          type: integer
+        points:
+          type: integer
+      required:
+        - id
+        - position
+        - points
+
+    CreateScoringRuleBody:
+      type: object
+      properties:
+        position:
+          type: integer
+        points:
+          type: integer
+      required:
+        - position
+        - points
+
+    StageRankingEntry:
+      type: object
+      properties:
+        position:
+          type: integer
+        playerId:
+          type: integer
+        playerName:
+          type: string
+        score:
+          type: integer
+        diffToPar:
+          type: integer
+        points:
+          type: integer
+      required:
+        - position
+        - playerId
+        - playerName
+        - score
+        - diffToPar
+        - points
+
+    PlayerRankingRow:
+      type: object
+      properties:
+        position:
+          type: integer
+        playerId:
+          type: integer
+        playerName:
+          type: string
+        stageScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/StageScore"
+        totalScore:
+          type: integer
+        totalPar:
+          type: integer
+        totalDiffToPar:
+          type: integer
+        totalPoints:
+          type: integer
+      required:
+        - position
+        - playerId
+        - playerName
+        - stageScores
+        - totalScore
+        - totalPar
+        - totalDiffToPar
+        - totalPoints
+
+    StageScore:
+      type: object
+      properties:
+        stageId:
+          type: integer
+        stageName:
+          type: string
+        score:
+          type: integer
+        par:
+          type: integer
+        diffToPar:
+          type: integer
+        points:
+          type: integer
+      required:
+        - stageId
+        - stageName
+        - score
+        - par
+        - diffToPar
+        - points
+
+    CumulatedRankingRow:
+      type: object
+      properties:
+        position:
+          type: integer
+        playerId:
+          type: integer
+        playerName:
+          type: string
+        totalScore:
+          type: integer
+        totalPar:
+          type: integer
+        totalDiffToPar:
+          type: integer
+        totalPoints:
+          type: integer
+      required:
+        - position
+        - playerId
+        - playerName
+        - totalScore
+        - totalPar
+        - totalDiffToPar
+        - totalPoints
+
+    Rankings:
+      type: object
+      properties:
+        yearId:
+          type: integer
+        year:
+          type: integer
+        stages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Stage"
+        stageRankings:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: "#/components/schemas/StageRankingEntry"
+        playerRankings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlayerRankingRow"
+        cumulatedRankings:
+          type: array
+          items:
+            $ref: "#/components/schemas/CumulatedRankingRow"
+      required:
+        - yearId
+        - year
+        - stages
+        - stageRankings
+        - playerRankings
+        - cumulatedRankings
