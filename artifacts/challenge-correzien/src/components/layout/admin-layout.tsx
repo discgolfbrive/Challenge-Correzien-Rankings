@@ -3,26 +3,45 @@ import { useLogout, useGetMe, getGetMeQueryKey } from "@workspace/api-client-rea
 import { useQueryClient } from "@tanstack/react-query";
 import { LogOut, LayoutDashboard, Users, MapPin, Trophy, Calendar, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect, useRef } from "react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const { data: me, isLoading } = useGetMe();
+  const { data: me, isLoading, isError } = useGetMe({ query: { retry: false } });
   const logout = useLogout();
+  const isLoggingOut = useRef(false);
+
+  useEffect(() => {
+    if (!isLoading && (isError || !me?.isAuthenticated)) {
+      setLocation("/admin/login");
+    }
+  }, [isLoading, isError, me, setLocation]);
 
   const handleLogout = () => {
+    if (isLoggingOut.current || logout.isPending) return;
+    isLoggingOut.current = true;
     logout.mutate(undefined, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+        queryClient.setQueryData(getGetMeQueryKey(), null);
+        queryClient.removeQueries({ queryKey: getGetMeQueryKey() });
         setLocation("/admin/login");
+      },
+      onSettled: () => {
+        isLoggingOut.current = false;
       },
     });
   };
 
-  if (isLoading) return <div className="p-8 text-center">Chargement...</div>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-foreground font-bold uppercase tracking-widest">Chargement...</div>
+      </div>
+    );
+  }
 
-  if (!me?.isAuthenticated) {
-    setLocation("/admin/login");
+  if (isError || !me?.isAuthenticated) {
     return null;
   }
 
@@ -65,9 +84,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
         <div className="p-4 border-t border-border">
-          <Button variant="outline" className="w-full justify-start gap-2" onClick={handleLogout}>
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-2"
+            onClick={handleLogout}
+            disabled={logout.isPending}
+          >
             <LogOut className="w-4 h-4" />
-            DÉCONNEXION
+            {logout.isPending ? "DÉCONNEXION..." : "DÉCONNEXION"}
           </Button>
         </div>
       </aside>
